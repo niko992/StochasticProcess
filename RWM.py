@@ -8,6 +8,7 @@ Created on Mon Dec 10 20:43:44 2018
 import numpy as np
 import functions as fc
 import constants as cts
+import scipy as sp
 
 #Covariance Matrices definition
 def Cmat(P):
@@ -32,8 +33,43 @@ def RWM(s2,P):
             Csi[i]=Z
         else:
             Csi[:,i]=Csi[:,i-1]
-    return Csi            
-        
+    return Csi
+
+def RWM2(s2,P):
+    M=np.ceil(P/2)
+    C=Cmat(P)
+    zero=np.zeros((P,))
+    Csi=np.zeros((P,cts.N))
+    Csi[:,0]=np.random.normal(zero,C)
+    for i in range(1,cts.N):
+        eps=np.random.normal(zero,s2*C)
+        Z=np.sqrt(1-s2)*Csi[:,i-1]+eps
+        U=np.random.uniform(0,1)
+        if U<np.min(fc.f(Z,M)/fc.f(Csi[:,i-1],M),1):
+            Csi[i]=Z
+        else:
+            Csi[:,i]=Csi[:,i-1]
+    return Csi     
+
+#To define BFGS method
+#def RWM3(s2,P):
+#    M=np.ceil(P/2)
+#    C=Cmat(P)
+#    zero=np.zeros((P,))
+#    Csi=np.zeros((P,cts.N))
+#    Csi[:,0]=np.random.normal(zero,C)
+#    for i in range(1,cts.N):
+#        eps=np.random.normal(zero,H)
+#        csi_ref=sp.optimize.BFGS()
+#        (fct.f,Csi[:,i-1])
+#        Z=csi_ref+
+#        U=np.random.uniform(0,1)
+#        if U<np.min(fc.f(Z,M)/fc.f(Csi[:,i-1],M),1):
+#            Csi[i]=Z
+#        else:
+#            Csi[:,i]=Csi[:,i-1]
+#    return Csi       
+#        
         
         
     
