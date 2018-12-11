@@ -52,24 +52,24 @@ def RWM2(s2,P):
     return Csi     
 
 #To define BFGS method
-#def RWM3(s2,P):
-#    M=np.ceil(P/2)
-#    C=Cmat(P)
-#    zero=np.zeros((P,))
-#    Csi=np.zeros((P,cts.N))
-#    Csi[:,0]=np.random.normal(zero,C)
-#    for i in range(1,cts.N):
-#        eps=np.random.normal(zero,H)
-#        csi_ref=sp.optimize.BFGS()
-#        (fct.f,Csi[:,i-1])
-#        Z=csi_ref+
-#        U=np.random.uniform(0,1)
-#        if U<np.min(fc.f(Z,M)/fc.f(Csi[:,i-1],M),1):
-#            Csi[i]=Z
-#        else:
-#            Csi[:,i]=Csi[:,i-1]
-#    return Csi       
-#        
+def RWM3(s2,P):
+    M=np.ceil(P/2)
+    C=Cmat(P)
+    zero=np.zeros((P,))
+    Csi=np.zeros((P,cts.N))
+    Csi[:,0]=np.random.normal(zero,C)
+    csi_ref=sp.optimize.minimize(-fxt.f,Csi[:,0],method='BFGS')
+    for i in range(1,cts.N):
+        eps=np.random.normal(zero,H)
+        (fct.f,Csi[:,i-1])
+        Z=csi_ref+eps
+        U=np.random.uniform(0,1)
+        if U<np.min(fc.f(Z,M)/fc.f(Csi[:,i-1],M),1):
+            Csi[i]=Z
+        else:
+            Csi[:,i]=Csi[:,i-1]
+    return Csi       
+      
         
         
     
