@@ -10,7 +10,6 @@ import functions as fct
 import constants as cts
 import scipy as sp
 import pdb
-import warnings
 
 # Covariance Matrices definition
 
@@ -57,7 +56,6 @@ def RWM2(s2, P):
         else:
             Csi[:, i] = Csi[:, i - 1]
     return Csi
-# To define BFGS method
 
 
 def RWM3(s2, P):
@@ -65,15 +63,19 @@ def RWM3(s2, P):
     C = Cmat(P)
     zero = np.zeros((P,))
     Csi = np.zeros((P, cts.N))
-    Csi[:, 0] = np.random.normal(zero, C)
-    csi_ref = sp.optimize.minimize(-fct.f, Csi[:, 0], method='BFGS')
+    Csi[:, 0] = np.random.multivariate_normal(zero, C)
+    alpha = 0.0001
+    ID = np.diag(np.ones(P))
+    dictionary = sp.optimize.minimize(fct.log_posterior, Csi[:, 0], args=(M), method='BFGS')
+    pdb.set_trace()
+    csi_ref = dictionary['x']
+    H = dictionary['hess_inv']
     for i in range(1, cts.N):
-        eps = np.random.normal(zero, H)
-        (fct.f, Csi[:, i - 1])
+        eps = np.random.multivariate_normal(zero, H+alpha*ID)
         Z = csi_ref + eps
         U = np.random.uniform(0, 1)
-        if U < np.min(fct.f(Z, M) / fct.f(Csi[:, i - 1], M), 1):
-            Csi[i] = Z
+        if U < np.min([fct.f(Z, M) / fct.f(Csi[:, i - 1], M), 1]):
+            Csi[:, i] = Z
         else:
             Csi[:, i] = Csi[:, i - 1]
     return Csi

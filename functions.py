@@ -74,3 +74,16 @@ def Pi0(csi):
 
 def f(csi, M):
     return likelihood(csi, M) * Pi0(csi)
+
+
+def log_posterior(csi, M):
+
+    y = np.asarray([0.5041, 0.8505, 1.2257, 1.4113]).reshape((4, 1))
+    log_likelihood = np.linalg.norm(y - G(csi, M))**2
+
+    P = len(csi)
+    csik2 = np.zeros((P, 1))
+    for k in range(P):
+        csik2[k] = (k + 1)**2 * csi[k]**2
+    log_prior = 0.5 * np.sum(csik2)
+    return log_likelihood + log_prior
