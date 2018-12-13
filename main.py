@@ -17,7 +17,7 @@ def main():
     plt.plot(chain[0, :])
     plt.show()'''
 
-    chain = RWM.RWM3(s2, P)
+    chain = RWM.RWM4(s2, P)
     print(chain.shape)
     plt.plot(chain[0, :])
     plt.show()

@@ -10,7 +10,7 @@ import functions as fct
 import constants as cts
 import scipy as sp
 import pdb
-
+import numdifftools as nd
 # Covariance Matrices definition
 
 
@@ -63,16 +63,54 @@ def RWM3(s2, P):
     C = Cmat(P)
     zero = np.zeros((P,))
     Csi = np.zeros((P, cts.N))
-    Csi[:, 0] = np.random.multivariate_normal(zero, C)
-    alpha = 0.0001
+    alpha = 0.000001
     ID = np.diag(np.ones(P))
-    dictionary = sp.optimize.minimize(fct.log_posterior, Csi[:, 0], args=(M), method='BFGS')
+    dictionary = sp.optimize.minimize(
+        fct.minus_log_posterior,  np.random.multivariate_normal(zero, C), args=(M), method='BFGS')
     pdb.set_trace()
-    csi_ref = dictionary['x']
-    H = dictionary['hess_inv']
+    csi_map = dictionary['x']
+    Csi[:, 0] = csi_map
+    print(csi_map)
+    H = dictionary['hess_inv'] + alpha*ID
     for i in range(1, cts.N):
-        eps = np.random.multivariate_normal(zero, H+alpha*ID)
-        Z = csi_ref + eps
+        eps = np.random.multivariate_normal(zero, H)
+        Z = csi_map + eps
+        U = np.random.uniform(0, 1)
+        if U < np.min([fct.f(Z, M) / fct.f(Csi[:, i - 1], M), 1]):
+            Csi[:, i] = Z
+        else:
+            Csi[:, i] = Csi[:, i - 1]
+    return Csi
+
+
+def RWM4(s2, P):
+    M = np.ceil(P / 2)
+    C = Cmat(P)
+    IP = np.diag(np.ones(P))
+    Is2 = IP*s2
+    zero = np.zeros((P,))
+    Csi = np.zeros((P, cts.N))
+
+    res = sp.optimize.minimize(fct.minus_log_posterior, np.random.multivariate_normal(zero, C), args=(M), method='BFGS')
+    csi_map = res['x']
+
+    Csi[:, 0] = csi_map
+
+    def G(x):
+        return fct.G(x, M)
+
+    C_inv = np.diag([(k+1)**2 for k in range(P)])
+    sqrt_C = np.diag([1/(k+1) for k in range(P)])
+
+    gradG = nd.Jacobian(G)
+    gamma = cts.sigma**2 * np.dot(gradG(csi_map).T, gradG(csi_map))
+    C_gamma = np.linalg.inv(C_inv + gamma)
+
+    H_gamma = np.dot(C, np.dot(gamma, C))
+    A_gamma = np.dot(sqrt_C, np.dot(sp.linalg.sqrtm(IP-Is2+np.linalg.inv(IP+H_gamma)), sqrt_C))
+    for i in range(1, cts.N):
+        eps = np.random.multivariate_normal(zero, s2*C_gamma)
+        Z = np.dot(A_gamma, Csi[:, i - 1]) + eps
         U = np.random.uniform(0, 1)
         if U < np.min([fct.f(Z, M) / fct.f(Csi[:, i - 1], M), 1]):
             Csi[:, i] = Z

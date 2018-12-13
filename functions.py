@@ -76,7 +76,7 @@ def f(csi, M):
     return likelihood(csi, M) * Pi0(csi)
 
 
-def log_posterior(csi, M):
+def minus_log_posterior(csi, M):
 
     y = np.asarray([0.5041, 0.8505, 1.2257, 1.4113]).reshape((4, 1))
     log_likelihood = np.linalg.norm(y - G(csi, M))**2
