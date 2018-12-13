@@ -87,3 +87,14 @@ def minus_log_posterior(csi, M):
         csik2[k] = (k + 1)**2 * csi[k]**2
     log_prior = 0.5 * np.sum(csik2)
     return log_likelihood + log_prior
+
+def correlation(N,B,i,q):
+    #mean with burn-in
+    mu=np.mean(q[B:])
+    return 1/(N-B-i-1)*np.sum((q[B:N-i]-mu)*(q[B+i:]-mu))
+    
+def ESS(N,B,q):
+    corr=np.zeros(N,)
+    for i in range(N-B):
+        corr[i]=correlation(N,B,i,q)
+    return N/(1+2*np.sum(corr))
