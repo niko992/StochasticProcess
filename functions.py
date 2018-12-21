@@ -91,8 +91,8 @@ def minus_log_posterior(csi, M):
 def correlation(N,B,i,q):
     #mean with burn-in
     mu=np.mean(q[B:])
-    return 1/(N-B-i-1)*np.sum((q[B:N-i]-mu)*(q[B+i:]-mu))
-    
+    return 1/(N-B-i+1)*np.sum((q[B:N-i]-mu)*(q[B+i:]-mu))
+
 def ESS(N,B,q):
     corr=np.zeros(N,)
     for i in range(N-B):
