@@ -15,10 +15,7 @@ import numdifftools as nd
 
 
 def Cmat(P):
-    C = np.zeros((P, P))
-    for i in range(P):
-        C[i, i] = (i + 1)**(-2)
-    return C
+    return np.diag([(k+1)**(-2) for k in range(P)])
 
 
 # Random Walk Metropolis
@@ -68,7 +65,7 @@ def RWM3(s2, P, f):
     dictionary = sp.optimize.minimize(
         fct.minus_log_posterior,  np.random.multivariate_normal(zero, C), args=(M), method='BFGS')
     csi_map = dictionary['x']
-    Csi_old = csi_map
+    Csi_old = csi_map+np.random.multivariate_normal(zero, C)
     q[0]=f(Csi_old)
     H = dictionary['hess_inv'] + alpha*ID
     for i in range(1, cts.N):
@@ -92,7 +89,7 @@ def RWM4(s2, P, f):
     res = sp.optimize.minimize(fct.minus_log_posterior, np.random.multivariate_normal(zero, C), args=(M), method='BFGS')
     csi_map = res['x']
 
-    Csi_old = csi_map
+    Csi_old = csi_map+np.random.multivariate_normal(zero, C)
     q[0]=f(Csi_old)
     def G(x):
         return fct.G(x, M)
