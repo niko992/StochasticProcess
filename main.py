@@ -6,6 +6,7 @@ import numpy as np
 import scipy as sp
 import functions as fct
 import constants as cts
+from tqdm import tqdm
 def intexp(csi):
     x=np.linspace(0,1,100)
     return sp.integrate.trapz(fct.u(x,csi),x)
@@ -26,7 +27,7 @@ def csi10(csi):
 def main():
         s2=0.5
         ESS=np.zeros((4,15))
-        for P in range(10,26):
+        for P in tqdm(range(10,25)):
             chain1=RWM.RWM(s2,P,csi1)
             ESS[0,P-10]=fct.ESS(cts.N,500,chain1)
             chain2=RWM.RWM(s2,P,csi2)
@@ -63,7 +64,7 @@ def main():
         print(np.mean(chain))
         ESS15[2]=fct.ESS(cts.N,500,chain)
 
-        chain = RWM.RWM4(s2, P)
+        chain = RWM.RWM4(s2, P, intexp)
         print(chain.shape)
         plt.plot(chain[0, :])
         plt.show()
