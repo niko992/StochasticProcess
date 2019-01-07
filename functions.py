@@ -24,7 +24,7 @@ def u(xx, csi):
     sinx = np.zeros((M, P))
     for i in range(M):
         for k in range(P):
-            sinx[i, k] = np.sin((k+1) * np.pi * xx[i])
+            sinx[i, k] = np.sin((k + 1) * np.pi * xx[i])
     return np.sqrt(2) / np.pi * (np.dot(sinx, csi))
 
 
@@ -62,6 +62,10 @@ def likelihood(csi, M):
 
 
 def Pi0(csi):
+    """Function returning the prior evaluated in csi
+    Args:
+        csi (np.array): point where the prior is evaluated
+    """
     P = len(csi)
     csik2 = np.zeros((P, 1))
     tpik2 = np.zeros((P, 1))
@@ -73,11 +77,24 @@ def Pi0(csi):
 
 
 def f(csi, M):
+    """Function returning the non-normalized posterior evaluated in csi
+    Args:
+        csi (np.array): point where the non-normalized posterior is evaluated
+        M (int): number of intervarls used in the numerical integration of the integral
+    Returns:
+        returns non-normalized posterior evaluated in the parameter csi
+    """
     return likelihood(csi, M) * Pi0(csi)
 
 
 def minus_log_posterior(csi, M):
-
+    """Function returning -log(posterior) evaluated in the parameter csi
+    Args:
+        csi (np.array): point where the function -log(posterior) is evaluated
+        M (int): number of iuntervarls used in the numerical integration of the integral
+    Returns:
+        returns -log(posterior) evaluated in the parameter csi
+    """
     y = np.asarray([0.5041, 0.8505, 1.2257, 1.4113]).reshape((4, 1))
     log_likelihood = np.linalg.norm(y - G(csi, M))**2
 
@@ -88,13 +105,21 @@ def minus_log_posterior(csi, M):
     log_prior = 0.5 * np.sum(csik2)
     return log_likelihood + log_prior
 
-def correlation(N,B,i,q):
-    #mean with burn-in
-    mu=np.mean(q[B:])
-    return 1/(N-B-i+1)*np.sum((q[B:N-i]-mu)*(q[B+i:]-mu))
 
-def ESS(N,B,q):
-    corr=np.zeros(N,)
-    for i in range(N-B):
-        corr[i]=correlation(N,B,i,q)
-    return N/(1+2*np.sum(corr))
+def correlation(B, i, q):
+    assert i < len(q)-B, "error in autocorrelation"
+    x = q[B:]
+    return np.corrcoef(np.asarray([x[:len(x)-i], x[i:]]))[0, 1]
+
+
+def ESS(B, q):
+    """Implementation of the ESS function
+    Args:
+        B (int): length of the burn-in
+        q (np.array): array that contains the chain to analize
+    """
+    N = len(q)
+    corr = np.zeros(N - B,)
+    for i in range(N - B-15):
+        corr[i] = correlation(B, i, q)
+    return N / (1 + 2 * np.nansum(corr))

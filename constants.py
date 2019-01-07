@@ -8,5 +8,5 @@ import numpy as np
 
 
 # CONSTANTS
-N = np.int(1e4)
+N = np.int(1e3)
 sigma = 0.04
