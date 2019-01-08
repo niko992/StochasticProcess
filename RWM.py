@@ -59,7 +59,7 @@ def laplace_approx(s2, P):
     C = Cmat(P)
     zero = np.zeros((P,))
     q = np.zeros((cts.N, P))
-    alpha = 0.000001
+    alpha = 1e-12
     ID = np.diag(np.ones(P))
     dictionary = sp.optimize.minimize(
         fct.minus_log_posterior,  np.random.multivariate_normal(zero, C), args=(M), method='BFGS')

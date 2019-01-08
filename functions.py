@@ -112,7 +112,7 @@ def correlation(B, i, q):
     return np.corrcoef(np.asarray([x[:len(x)-i], x[i:]]))[0, 1]
 
 
-def ESS(B, q):
+def ESS(B, q, K):
     """Implementation of the ESS function
     Args:
         B (int): length of the burn-in
@@ -120,6 +120,6 @@ def ESS(B, q):
     """
     N = len(q)
     corr = np.zeros(N - B,)
-    for i in range(N - B-15):
+    for i in range(K):
         corr[i] = correlation(B, i, q)
-    return N / (1 + 2 * np.nansum(corr))
+    return (N-B) / (1 + 2 * np.nansum(corr))

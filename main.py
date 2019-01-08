@@ -39,9 +39,9 @@ def run(s2, P, K, burnout):
 
     ESS = np.zeros((4, ))
     CORR = np.zeros((P, K))
-    print("Random walk Metropolis")
+    print("Laplace")
 
-    main_chain = RWM.RWM(s2, P)
+    main_chain = RWM.pCN(s2, P)
 
     for i in range(K):
         for j in range(P):
@@ -52,18 +52,18 @@ def run(s2, P, K, burnout):
     chain2 = np.asarray([csi2(csi) for csi in main_chain])
     chain3 = np.asarray([csi10(csi) for csi in main_chain])
     chain4 = np.asarray([intexp(csi) for csi in main_chain])
-    ESS[0] = fct.ESS(burnout, chain1)
-    ESS[1] = fct.ESS(burnout, chain2)
-    ESS[2] = fct.ESS(burnout, chain3)
-    ESS[3] = fct.ESS(burnout, chain4)
+    ESS[0] = fct.ESS(burnout, chain1, K)
+    ESS[1] = fct.ESS(burnout, chain2, K)
+    ESS[2] = fct.ESS(burnout, chain3, K)
+    ESS[3] = fct.ESS(burnout, chain4, K)
 
     return corr, ESS, main_chain
 
 
-def main():
-    N = 5
-    s2_max = 0.5
-    s2_min = 1e-3
+def main_s2():
+    N = 10
+    s2_max = 0.1
+    s2_min = 0.2
     s2_vec = np.linspace(s2_min, s2_max, N)
     P = 10
     K = 100
@@ -79,7 +79,7 @@ def main():
         plt.plot()
         plt.title("Random Walk Metropolis\n"
                   "Acceptance ratio: {:{}f}, s2: {:{}f}, P: {:{}d}".format(acceptance_ratio(main_chain), .2, s2, .3, P, 1))
-        fig1.savefig("RMW_s2_{}_P_{}".format(i, P))
+        fig1.savefig("RMW_s2_{}_P_{}".format(i, P), format="eps")
         plt.close()
 
     fig1 = plt.figure(1)
@@ -88,9 +88,47 @@ def main():
     plt.title("Autocorrelation")
     plt.legend()
     plt.ylim((0, 1))
-    fig1.savefig("autocorr")
+    fig1.savefig("autocorr", format="eps")
     return 0
 
 
+def main_ex1():
+    s2 = 0.156
+    P_min = 10
+    P_max = 50
+    P_vec = np.asarray(np.linspace(P_min, P_max, 5), dtype='int')
+    N = len(P_vec)
+    K = 200
+    burnout = 500
+
+    ESS = np.zeros((4, N))
+    corr = np.zeros((N, K))
+    for i, P in enumerate(P_vec):
+        corr[i, :], ESS[:, i], main_chain = run(s2, P, K, burnout)
+        fig1 = plt.figure(1)
+        for j in range(P):
+            plt.plot(main_chain[:, j])
+        plt.plot()
+        plt.title("Acceptance ratio: {:{}f}, s2: {:{}f}, P: {:{}d}".format(acceptance_ratio(main_chain), .2, s2, .3, P, 1))
+        fig1.savefig("RMW_s2_{}_P_{}.eps".format(i, P), format="eps")
+        plt.close()
+
+    fig1 = plt.figure(1)
+    for j in range(N):
+        plt.plot(corr[j, :], label="P: {:{}d}".format(P_vec[j], 1))
+    plt.title("Autocorrelation")
+    plt.legend()
+    plt.ylim((0, 1))
+    fig1.savefig("autocorr.eps", format="eps")
+
+    plt.close()
+    fig1 = plt.figure(1)
+    for j in range(4):
+        plt.plot(P_vec, ESS[j, :], label="f{}".format(j, 1))
+    plt.title("ESS")
+    plt.legend()
+    fig1.savefig("ESS.eps", format="eps")
+    return 0
+
 if __name__ == "__main__":
-    main()
+    main_ex1()
