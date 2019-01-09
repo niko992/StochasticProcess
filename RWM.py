@@ -83,7 +83,6 @@ def gen_pCN(s2, P):
     M = np.ceil(P / 2)
     C = Cmat(P)
     IP = np.diag(np.ones(P))
-    Is2 = IP * s2
     zero = np.zeros((P,))
     Q = np.zeros((cts.N, P))
 
@@ -106,7 +105,7 @@ def gen_pCN(s2, P):
 
     H_gamma = np.dot(sqrt_C, np.dot(gamma, sqrt_C))
     A_gamma = np.dot(sqrt_C, np.dot(sp.linalg.sqrtm(
-        IP - Is2 + np.linalg.inv(IP + H_gamma)), sqrt_C_inv))
+        IP - s2*np.linalg.inv(IP + H_gamma)), sqrt_C_inv))
     for i in range(1, cts.N):
         eps = np.random.multivariate_normal(zero, s2 * C_gamma)
         Z = np.dot(A_gamma, Csi_old) + eps

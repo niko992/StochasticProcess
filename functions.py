@@ -96,14 +96,14 @@ def minus_log_posterior(csi, M):
         returns -log(posterior) evaluated in the parameter csi
     """
     y = np.asarray([0.5041, 0.8505, 1.2257, 1.4113]).reshape((4, 1))
-    log_likelihood = np.linalg.norm(y - G(csi, M))**2
+    minus_log_likelihood = np.linalg.norm(y - G(csi, M))**2/(2*cts.sigma**2)
 
     P = len(csi)
     csik2 = np.zeros((P, 1))
     for k in range(P):
         csik2[k] = (k + 1)**2 * csi[k]**2
-    log_prior = 0.5 * np.sum(csik2)
-    return log_likelihood + log_prior
+    minus_log_prior = 0.5 * np.sum(csik2)
+    return minus_log_likelihood + minus_log_prior
 
 
 def correlation(B, i, q):

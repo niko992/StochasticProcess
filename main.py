@@ -93,7 +93,7 @@ def main_s2():
 
 
 def main_ex1():
-    s2 = 1.
+    s2 = 0.78
     P_min = 10
     P_max = 50
     P_vec = np.asarray(np.linspace(P_min, P_max, 5), dtype='int')
