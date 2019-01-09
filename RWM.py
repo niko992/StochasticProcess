@@ -78,38 +78,40 @@ def laplace_approx(s2, P):
 
 
 def gen_pCN(s2, P):
+    # import pdb
+    # pdb.set_trace()
     M = np.ceil(P / 2)
     C = Cmat(P)
     IP = np.diag(np.ones(P))
     Is2 = IP * s2
     zero = np.zeros((P,))
-    q = np.zeros((cts.N, P))
+    Q = np.zeros((cts.N, P))
 
     res = sp.optimize.minimize(fct.minus_log_posterior, np.random.multivariate_normal(
         zero, C), args=(M), method='BFGS')
     csi_map = res['x']
 
     Csi_old = np.random.multivariate_normal(zero, C)
-    q[0] = Csi_old
+    Q[0] = Csi_old
 
     def G(x):
         return fct.G(x, M)
 
     C_inv = np.diag([(k + 1)**2 for k in range(P)])
     sqrt_C = np.diag([1 / (k + 1) for k in range(P)])
-
+    sqrt_C_inv = np.diag([(k + 1) for k in range(P)])
     gradG = nd.Jacobian(G)
-    gamma = cts.sigma**2 * np.dot(gradG(csi_map).T, gradG(csi_map))
+    gamma = cts.sigma**(-2) * np.dot(gradG(csi_map).T, gradG(csi_map))
     C_gamma = np.linalg.inv(C_inv + gamma)
 
-    H_gamma = np.dot(C, np.dot(gamma, C))
+    H_gamma = np.dot(sqrt_C, np.dot(gamma, sqrt_C))
     A_gamma = np.dot(sqrt_C, np.dot(sp.linalg.sqrtm(
-        IP - Is2 + np.linalg.inv(IP + H_gamma)), sqrt_C))
+        IP - Is2 + np.linalg.inv(IP + H_gamma)), sqrt_C_inv))
     for i in range(1, cts.N):
         eps = np.random.multivariate_normal(zero, s2 * C_gamma)
         Z = np.dot(A_gamma, Csi_old) + eps
         U = np.random.uniform(0, 1)
         if U < np.min([fct.f(Z, M) / fct.f(Csi_old, M), 1]):
             Csi_old = Z
-        q[i] = Csi_old
-    return q
+        Q[i] = Csi_old
+    return Q

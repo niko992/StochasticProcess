@@ -35,27 +35,27 @@ def acceptance_ratio(main_chain):
     return (N-1-count)/(N-1)
 
 
-def run(s2, P, K, burnout):
+def run(s2, P, K, burnin):
 
     ESS = np.zeros((4, ))
     CORR = np.zeros((P, K))
-    print("Laplace")
+    print("gen_pCN")
 
-    main_chain = RWM.pCN(s2, P)
+    main_chain = RWM.gen_pCN(s2, P)
 
     for i in range(K):
         for j in range(P):
-            CORR[j, i] = fct.correlation(burnout, i, main_chain[:, j])
+            CORR[j, i] = fct.correlation(burnin, i, main_chain[:, j])
     corr = np.max(CORR, axis=0)
 
     chain1 = np.asarray([csi1(csi) for csi in main_chain])
     chain2 = np.asarray([csi2(csi) for csi in main_chain])
     chain3 = np.asarray([csi10(csi) for csi in main_chain])
     chain4 = np.asarray([intexp(csi) for csi in main_chain])
-    ESS[0] = fct.ESS(burnout, chain1, K)
-    ESS[1] = fct.ESS(burnout, chain2, K)
-    ESS[2] = fct.ESS(burnout, chain3, K)
-    ESS[3] = fct.ESS(burnout, chain4, K)
+    ESS[0] = fct.ESS(burnin, chain1, K)
+    ESS[1] = fct.ESS(burnin, chain2, K)
+    ESS[2] = fct.ESS(burnin, chain3, K)
+    ESS[3] = fct.ESS(burnin, chain4, K)
 
     return corr, ESS, main_chain
 
@@ -67,12 +67,12 @@ def main_s2():
     s2_vec = np.linspace(s2_min, s2_max, N)
     P = 10
     K = 100
-    burnout = 500
+    burnin = 500
 
     ESS = np.zeros((4, N))
     corr = np.zeros((N, K))
     for i, s2 in enumerate(s2_vec):
-        corr[i, :], ESS[:, i], main_chain = run(s2, P, K, burnout)
+        corr[i, :], ESS[:, i], main_chain = run(s2, P, K, burnin)
         fig1 = plt.figure(1)
         for j in range(P):
             plt.plot(main_chain[:, j])
@@ -93,18 +93,18 @@ def main_s2():
 
 
 def main_ex1():
-    s2 = 0.156
+    s2 = 1.
     P_min = 10
     P_max = 50
     P_vec = np.asarray(np.linspace(P_min, P_max, 5), dtype='int')
     N = len(P_vec)
     K = 200
-    burnout = 500
+    burnin = 500
 
     ESS = np.zeros((4, N))
     corr = np.zeros((N, K))
     for i, P in enumerate(P_vec):
-        corr[i, :], ESS[:, i], main_chain = run(s2, P, K, burnout)
+        corr[i, :], ESS[:, i], main_chain = run(s2, P, K, burnin)
         fig1 = plt.figure(1)
         for j in range(P):
             plt.plot(main_chain[:, j])
@@ -129,6 +129,7 @@ def main_ex1():
     plt.legend()
     fig1.savefig("ESS.eps", format="eps")
     return 0
+
 
 if __name__ == "__main__":
     main_ex1()
